@@ -14,4 +14,5 @@
 	// App Version
 	define('APPVERSION', '1.0.0');
 	
+	require_once 'setup.php';
 	require_once 'Database.php';

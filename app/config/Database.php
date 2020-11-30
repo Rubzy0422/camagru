@@ -29,10 +29,12 @@
 				$this->dbh = new PDO($DB_DNS, $this->DB_USER, $this->DB_PASSWORD, $options);
 			} catch(PDOException $e){
 				$this->error = $e->getMessage();
-				echo $this->error;
-			}
+				Setup::InitDB();
+				die($this->error);
+			} 
+			
 		}
-
+	
 		// Prepare statement with query
 		public function query($sql){
 			$this->stmt = $this->dbh->prepare($sql);
