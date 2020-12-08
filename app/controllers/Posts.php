@@ -16,19 +16,25 @@
 			$data = [
 				'posts' => $posts
 			];
-
 			$this->view('posts/index', $data);
 		}
 
 		public function add(){
+			// FILES :) 
+			$files = glob('../public/stickers/*.{jpg,png,gif}', GLOB_BRACE);
+
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
 				// Sanitize POST array
 				$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-
+				
 				$data = [
 					'title' => trim($_POST['title']),
 					'body' => trim($_POST['body']),
 					'user_id' => $_SESSION['user_id'],
+					'userimg' => $_POST['userimg'],
+					'stickerimg' => $_POST['stickerimg'],
+
+					
 					'title_err' => '',
 					'body_err' => ''
 				];
@@ -52,13 +58,22 @@
 					}
 				} else {
 					// Load view with errors
+					$data['files'] = $files;
 					$this->view('posts/add', $data);
 				}
 
 			} else {
 				$data = [
-					'title' => '',
-					'body' => ''
+					'title' => trim($_POST['title']),
+					'body' => trim($_POST['body']),
+					'user_id' => $_SESSION['user_id'],
+					'userimg' => $_post['userimg'],
+					'stickerimg' => $_POST['stickerimg'],
+
+					
+					'title_err' => '',
+					'body_err' => '',
+					'files' => $files
 				];
 	
 				$this->view('posts/add', $data);

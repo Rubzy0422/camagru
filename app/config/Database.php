@@ -63,7 +63,9 @@
 
 		// Execute the prepared statement
 		public function execute(){
-			return $this->stmt->execute();
+			// endtransaction
+			return $this->stmt->execute(); //bool
+			// dbh->rollback();
 		}
 
 		// Get result set as array of objects
