@@ -12,12 +12,17 @@
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
 				// Sanitize POST data
 				$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
 				$data =[
 					'uname' => trim($_POST['uname']),
 					'email' => trim($_POST['email']),
 					'password' => trim($_POST['password']),
 					'confirm_password' => trim($_POST['confirm_password']),
 					'token' => '',
+					'notifications' =>  (
+						isset($_POST['notification']) && 
+						(trim($_POST['notification']) == 'true')
+					) ? 1 : 0,
 					'uname_err' => '',
 					'email_err' => '',
 					'password_err' => '',
@@ -26,6 +31,7 @@
 				$data = validate_email($data, $this->userModel);
 				$data = validate_username($data, $this->userModel);
 				$data = validate_passwords($data);
+
 				// Make sure errors are empty
 				if(empty($data['email_err']) && empty($data['uname_err']) && empty($data['password_err']) && empty($data['confirm_password_err'])){
 					// Hash Password
@@ -61,6 +67,7 @@
 					'email' => '',
 					'password' => '',
 					'confirm_password' => '',
+					'notifications' => true,
 					'uname_err' => '',
 					'email_err' => '',
 					'password_err' => '',
@@ -127,6 +134,7 @@
 			unset($_SESSION['user_id']);
 			unset($_SESSION['user_email']);
 			unset($_SESSION['user_uname']);
+			unset($_SESSION['notifications']);
 			session_destroy();
 			redirect('users/login');
 		}
@@ -336,6 +344,10 @@
 				$data = [
 					'uname' => trim($_POST['uname']),
 					'email' => trim($_POST['email']),
+					'notifications' =>  (
+						isset($_POST['notification']) && 
+						(trim($_POST['notification']) == 'true')
+					) ? 1 : 0,
 					'uname_err' => '',
 					'email_err' => ''
 				];
@@ -345,9 +357,11 @@
 				// Make sure errors are empty
 				if(empty($data['email_err']) && empty($data['uname_err'])){
 					if($data = $this->userModel->updateUser($data)){
+						// $this->logout();
+						$this->createUserSession($data);
+						// $this->login($data);
 						flash('update_success', 'Your Profile has been updated!');
-						self::logout();
-						
+						// $this->createUserSession($data);
 					} else {
 						die('Something went wrong');
 					}
@@ -360,6 +374,7 @@
 				$data = [
 						'uname' => $_SESSION['user_uname'],
 						'email' => $_SESSION['user_email'],
+						'notifications' => $_SESSION['notifications'],
 						'uname_err' => '',
 						'email_err' => '',
 				];
@@ -387,9 +402,12 @@
 		}
 
 		public function createUserSession($user){
+			var_dump($user);
+			// die();
 			$_SESSION['user_id'] = $user->id;
 			$_SESSION['user_email'] = $user->email;
 			$_SESSION['user_uname'] = $user->uname;
+			$_SESSION['notifications'] = $user->notifications;
 			redirect('posts');
 		}
 

@@ -8,12 +8,13 @@
 
 		// Regsiter user
 		public function register($data){
-			$this->db->query('INSERT INTO users (uname, email, password, verify_Hash) VALUES(:uname, :email, :password, :token)');
+			$this->db->query('INSERT INTO users (uname, email, password, verify_Hash, notifications) VALUES(:uname, :email, :password, :token, :notifications)');
 			// Bind values
 			$this->db->bind(':uname', $data['uname']);
 			$this->db->bind(':email', $data['email']);
 			$this->db->bind(':password', $data['password']);
 			$this->db->bind(':token', $data['token']);
+			$this->db->bind(':notifications', $data['notifications']);
 
 			// Execute
 			if($this->db->execute()){
@@ -85,14 +86,15 @@
 
 		// Update User 
 		public function updateUser($data) {
-			$this->db->query('UPDATE users SET uname =:uname,  email=:email WHERE id =:id ');
+			$this->db->query('UPDATE users SET uname =:uname,  email=:email, notifications=:notifications WHERE id =:id ');
 			// Bind values
 			$this->db->bind(':uname', $data['uname']);
 			$this->db->bind(':email', $data['email']);
+			$this->db->bind(':notifications', $data['notifications']);
 			$this->db->bind(':id', $_SESSION['user_id']);
 			// Execute
 			if($this->db->execute()){
-				return true;
+				return $this->findUserByUsername($data['uname']);
 			} else {
 				return false;
 			}

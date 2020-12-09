@@ -24,7 +24,7 @@
 										</div>
 										<div class="stickers" style="width:100%;background-color:black;overflow-y:scroll;height: 10vh;">
 											<?php
-												foreach ($data['files'] as $key=>$file)
+												foreach ($data['stickers'] as $key=>$file)
 												{
 													echo '<img id="img'. $key .'"  draggable="true" ondragstart="drag(event)" src='. $file .' style="height: 10vh;">';
 												}
@@ -64,6 +64,12 @@
 							<!-- Actual Form -->
 							<div class="col">
 								<form action="<?php echo URLROOT; ?>/posts/add" method="post" id="PostForm" onsubmit="appendSubmit()">
+								<div class="form-group">
+										<!-- <input name="userimg" value=""/> -->
+										<span class="invalid-feedback"><?php echo $data['userimg_err']; ?></span>
+										<span class="invalid-feedback"><?php echo $data['stickerimg_err']; ?></span>
+									</div>
+
 									<div class="form-group">
 										<label for="title">Title: <sup>*</sup></label>
 										<input type="text" name="title" class="form-control form-control-lg <?php echo (!empty($data['title_err'])) ? 'is-invalid' : ''; ?>" value="<?php echo $data['title']; ?>">
@@ -74,6 +80,8 @@
 										<textarea name="body" class="form-control form-control-lg <?php echo (!empty($data['body_err'])) ? 'is-invalid' : ''; ?>"><?php echo $data['body']; ?></textarea>
 										<span class="invalid-feedback"><?php echo $data['body_err']; ?></span>
 									</div>
+									
+
 									<input type="submit" id="PostBtn" class="btn btn-success" value="Submit" disabled>
 								</form>
 							</div>

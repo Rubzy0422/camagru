@@ -37,6 +37,7 @@
 	
 		// Prepare statement with query
 		public function query($sql){
+			// Execute start transaction 
 			$this->stmt = $this->dbh->prepare($sql);
 		}
 
@@ -63,9 +64,17 @@
 
 		// Execute the prepared statement
 		public function execute(){
-			// endtransaction
-			return $this->stmt->execute(); //bool
-			// dbh->rollback();
+			// // endtransaction
+			// return 
+			if ($this->stmt->execute() != false)//bool
+			{
+				return true;
+			}
+			else
+			{  		
+				// dbh->rollback();
+				return false;
+			}
 		}
 
 		// Get result set as array of objects

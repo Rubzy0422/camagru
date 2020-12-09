@@ -12,7 +12,7 @@
 
 
 </head>
-<body>
 	<?php require APPROOT . '/views/inc/navbar.php'; ?>
-	<div class="container">
+<body class="pt-5">
+	<div class="container pt-5">
 	

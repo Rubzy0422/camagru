@@ -21,59 +21,65 @@
 
 		public function add(){
 			// FILES :) 
-			$files = glob('../public/stickers/*.{jpg,png,gif}', GLOB_BRACE);
+			$prevPosts = [];
+			$stickers = glob('../public/stickers/*.{jpg,png,gif}', GLOB_BRACE);
 
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
 				// Sanitize POST array
 				$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-				
 				$data = [
 					'title' => trim($_POST['title']),
 					'body' => trim($_POST['body']),
 					'user_id' => $_SESSION['user_id'],
 					'userimg' => $_POST['userimg'],
 					'stickerimg' => $_POST['stickerimg'],
-
-					
+					'stickers' => $stickers,
+					'prev_posts' => $prevPosts,
 					'title_err' => '',
-					'body_err' => ''
+					'body_err' => '',
+					'stickerimg_err' => '',
+					'userimg_err' => ''
 				];
 
-				// Validate data
+				// // Validate data
 				if(empty($data['title'])){
 					$data['title_err'] = 'Please enter title';
 				}
 				if(empty($data['body'])){
 					$data['body_err'] = 'Please enter body text';
 				}
-
+				if (empty($data['stickerimg'])) {
+					$data['stickerimg_err'] = 'Please enter a sticker on the image';
+				}
+				if (empty($dara['userimg_err'])) {
+					$data['userimg_err'] = 'Please enter a image of your chosing';
+				}
 				// Make sure no errors
-				if(empty($data['title_err']) && empty($data['body_err'])){
-					// Validated
+				if(empty($data['title_err']) && empty($data['body_err']) && empty($data['stickerimg_err'] && empty($data['userimg_err']))) {
 					if($this->postModel->addPost($data)){
 						flash('post_message', 'Post Added');
 						redirect('posts');
 					} else {
+						//Image not created or what ever lol
 						die('Something went wrong');
 					}
 				} else {
-					// Load view with errors
-					$data['files'] = $files;
 					$this->view('posts/add', $data);
 				}
 
 			} else {
 				$data = [
-					'title' => trim($_POST['title']),
-					'body' => trim($_POST['body']),
-					'user_id' => $_SESSION['user_id'],
-					'userimg' => $_post['userimg'],
-					'stickerimg' => $_POST['stickerimg'],
-
-					
+					'title' => '',
+					'body' => '',
+					'user_id' => '',
+					'userimg' => '',
+					'stickerimg' => '',
+					'stickers' => $stickers,
+					'prev_posts' => $prevPosts,
 					'title_err' => '',
 					'body_err' => '',
-					'files' => $files
+					'stickerimg_err' => '',
+					'userimg_err' => ''
 				];
 	
 				$this->view('posts/add', $data);
@@ -136,6 +142,7 @@
 		}
 
 		public function show($id){
+			// Display comments :)
 			$post = $this->postModel->getPostById($id);
 			$user = $this->userModel->getUserById($post->user_id);
 
@@ -151,8 +158,8 @@
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
 				// Get existing post from model
 				$post = $this->postModel->getPostById($id);
-				
 				// Check for owner
+				
 				if($post->user_id != $_SESSION['user_id']){
 					redirect('posts');
 				}

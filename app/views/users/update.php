@@ -15,6 +15,16 @@
 						<input type="email" name="email" class="form-control form-control-lg <?php echo (!empty($data['email_err'])) ? 'is-invalid' : ''; ?>" value="<?php echo $data['email']; ?>">
 						<span class="invalid-feedback"><?php echo $data['email_err']; ?></span>
 					</div>
+					<div class="form-group">
+						<div class="row">
+							<div class="col">
+								<label for="notification">Enable Notifications:</label>
+							</div>
+							<div class="col">
+								<input type="checkbox" id="notification" name="notification" value="true" <?php if ($data['notifications'] == true) echo 'checked'; ?>>
+							</div>
+						</div>
+					</div>
 					<div class="row">
 						<div class="col">
 							<input type="submit" value="Update" class="btn btn-success btn-block">
@@ -28,7 +38,7 @@
 				<div class="row" style="margin-top: 10%">
 						<div class="col"></div>
 						<div class="col">
-							<form action="<?php echo URLROOT; ?>/users/delete" method="post">
+							<form action="<?php echo URLROOT; ?>/users/delete" method="post" onsubmit="return confirm('are you sure you want to delete your account?');">
 								<input type="submit" value="Delete Account" class="btn btn-danger btn-block">
 							</form>
 						</div>
