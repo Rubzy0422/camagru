@@ -16,7 +16,7 @@
 				</ul>
 				
 				<ul class="navbar-nav ml-auto">
-					<?php if(isset($_SESSION['user_id'])) : ?>
+					<?php if(isset($_SESSION['userid'])) : ?>
 					<li class="nav-item">
 							<a class="nav-link" href="<?php echo URLROOT; ?>/users/update"><?php echo $_SESSION['user_uname']; ?></a>
 						</li>

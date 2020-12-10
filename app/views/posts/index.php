@@ -33,17 +33,23 @@
 			
 			<div class="row">
 				<div class="col">
-					<button class="btn btn-success">Like</button>
+					<!-- Work with Likes Table to add / Remove like lol -->
+					
+					<a href="<?php echo URLROOT; ?>/posts/like/<?php echo $post->postId; ?>" class="btn btn-dark">
+					<i class="fa fa-heart"></i> <?php echo ($post->likes != 0) ?></a>
 				</div>
 				<div class="col">
-					<button class="btn btn-success">Comment</button>
+					<a href="<?php echo URLROOT; ?>/posts/comment/<?php echo $post->postId; ?>" class="btn btn-dark">
+					<i class="fa fa-comment"></i> <?php echo ($post->comments != 0) ?></a>
 				</div>
-				<?php if($post->user_id == $_SESSION['user_id']) : ?>
-					
-					<a href="<?php echo URLROOT; ?>/posts/edit/<?php echo $post->postId; ?>" class="btn btn-dark">Edit</a>
-					<form class="pull-right" action="<?php echo URLROOT; ?>/posts/delete/<?php echo $post->postId; ?>" onsubmit="return confirm('are you sure you want to delete this post?');" method="post">
-						<input type="submit" value="Delete" class="btn btn-danger">
-					</form>
+				<?php if(isLoggedIn()) : ?>
+					<?php if($post->userid == $_SESSION['userid']) : ?>
+
+						<a href="<?php echo URLROOT; ?>/posts/edit/<?php echo $post->postId; ?>" class="btn btn-dark">Edit</a>
+						<form class="pull-right" action="<?php echo URLROOT; ?>/posts/delete/<?php echo $post->postId; ?>" onsubmit="return confirm('are you sure you want to delete this post?');" method="post">
+							<input type="submit" value="Delete" class="btn btn-danger">
+						</form>
+					<?php endif; ?>
 				<?php endif; ?>
 			</div>
 

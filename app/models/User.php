@@ -91,7 +91,7 @@
 			$this->db->bind(':uname', $data['uname']);
 			$this->db->bind(':email', $data['email']);
 			$this->db->bind(':notifications', $data['notifications']);
-			$this->db->bind(':id', $_SESSION['user_id']);
+			$this->db->bind(':id', $_SESSION['userid']);
 			// Execute
 			if($this->db->execute()){
 				return $this->findUserByUsername($data['uname']);
@@ -105,7 +105,7 @@
 			$this->db->query('UPDATE users SET password =:password WHERE id =:id ');
 			// Bind values
 			$this->db->bind(':password', $data['password']);
-			$this->db->bind(':id', $data['user_id']);
+			$this->db->bind(':id', $data['userid']);
 			// Execute
 			if($this->db->execute()){
 				return true;

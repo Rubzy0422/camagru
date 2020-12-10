@@ -1,26 +1,28 @@
 <?php
 	class Posts extends Controller {
 		public function __construct(){
-			if(!isLoggedIn()){
-				redirect('users/login');
-			}
-
 			$this->postModel = $this->model('Post');
 			$this->userModel = $this->model('User');
+			$this->likeModel = $this->model('Like');
+			$this->commentModel = $this->model('Comment');
 		}
 
 		public function index(){
 			// Get posts
+			// Add Pagination Page number
 			$posts = $this->postModel->getPosts();
-
+			
+			// Loop through posts and add likes
 			$data = [
-				'posts' => $posts
+				'posts' => $posts,
 			];
 			$this->view('posts/index', $data);
 		}
 
 		public function add(){
-			// FILES :) 
+			if(!isLoggedIn()){
+				redirect('users/login');
+			}
 			$prevPosts = [];
 			$stickers = glob('../public/stickers/*.{jpg,png,gif}', GLOB_BRACE);
 
@@ -30,7 +32,7 @@
 				$data = [
 					'title' => trim($_POST['title']),
 					'body' => trim($_POST['body']),
-					'user_id' => $_SESSION['user_id'],
+					'userid' => $_SESSION['userid'],
 					'userimg' => $_POST['userimg'],
 					'stickerimg' => $_POST['stickerimg'],
 					'stickers' => $stickers,
@@ -71,7 +73,7 @@
 				$data = [
 					'title' => '',
 					'body' => '',
-					'user_id' => '',
+					'userid' => '',
 					'userimg' => '',
 					'stickerimg' => '',
 					'stickers' => $stickers,
@@ -87,6 +89,9 @@
 		}
 
 		public function edit($id){
+			if(!isLoggedIn()){
+				redirect('users/login');
+			}
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
 				// Sanitize POST array
 				$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -95,7 +100,7 @@
 					'id' => $id,
 					'title' => trim($_POST['title']),
 					'body' => trim($_POST['body']),
-					'user_id' => $_SESSION['user_id'],
+					'userid' => $_SESSION['userid'],
 					'title_err' => '',
 					'body_err' => ''
 				];
@@ -127,40 +132,93 @@
 				$post = $this->postModel->getPostById($id);
 
 				// Check for owner
-				if($post->user_id != $_SESSION['user_id']){
+				if($post->userid != $_SESSION['userid']){
 					redirect('posts');
 				}
-
 				$data = [
 					'id' => $id,
 					'title' => $post->title,
-					'body' => $post->body
+					'body' => $post->body,
+					'userimage_path' => $post->userimage_path
 				];
-	
 				$this->view('posts/edit', $data);
 			}
 		}
 
-		public function show($id){
+		public function comment($id){
 			// Display comments :)
 			$post = $this->postModel->getPostById($id);
-			$user = $this->userModel->getUserById($post->user_id);
+			$user = $this->userModel->getUserById($post->userid);
+			$comments = $this->commentModel->getCommentForId($post->postId);
 
-			$data = [
-				'post' => $post,
-				'user' => $user
-			];
+			if($_SERVER['REQUEST_METHOD'] == 'POST'){
+				$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+				
+				$data = [
+					'post' => $post,
+					'user' => $user,
+					'comments' => $comments,
+					'userpost' => trim($_POST['userpost']),
+					'userpost_err' => ''
+				];
 
-			$this->view('posts/show', $data);
+				if (empty($data['userpost']))
+				{
+					$data['userpost_err'] = 'Please enter a comment';
+				}
+				if(empty($data['userpost_err']))
+				{
+					// Actual Update Of comments 
+					$userdata['userid'] = $_SESSION['userid'];
+					$userdata['postid'] = $id;
+					$userdata['comment'] = $data['userpost'];
+					$data['userpost'] = '';
+					
+					if ($user->notifications == true)
+					{
+						$email_data['username'] = $user->uname;
+						$email_data['action'] = "Comment";
+						$email_data['post_title'] = $post->title;
+						$email_data['post_url'] = URLROOT . '/posts/index/';
+
+						if (!send_mail($user->email, $email_data))
+							die ('Could not Send EMAIL!');
+					}
+
+					if ($updatedComment = $this->commentModel->addComment($userdata))
+					{
+						$data['comments'] = $updatedComment;
+					}
+					else {
+						die ("Could not update Comments!");
+					}
+				}			
+				$this->view('posts/comment', $data);
+			}
+			else {
+				
+				$data = [
+					'post' => $post,
+					'user' => $user,
+					'comments' => $comments,
+					'userpost' => '',
+					'userpost_err' => ''
+				];
+	
+				$this->view('posts/comment', $data);
+			}
 		}
 
 		public function delete($id){
+			if(!isLoggedIn()){
+				redirect('users/login');
+			}
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
 				// Get existing post from model
 				$post = $this->postModel->getPostById($id);
 				// Check for owner
 				
-				if($post->user_id != $_SESSION['user_id']){
+				if($post->userid != $_SESSION['userid']){
 					redirect('posts');
 				}
 
@@ -173,5 +231,36 @@
 			} else {
 				redirect('posts');
 			}
+		}
+
+		public function like($id) {
+			if(!isLoggedIn()){
+				redirect('users/login');
+			}
+			$data['userid'] = $_SESSION['userid'];
+			$data['postid'] = $id;
+
+			// Get the poster by id to send notification if set
+			$post = $this->postModel->getPostById($id);
+			$user = $this->userModel->getUserById($post->userid);
+			
+			// Toggle Post Like
+			if ($user->notifications == true)
+			{
+				$email_data['username'] = $user->uname;
+				$email_data['action'] = "Like";
+				$email_data['post_title'] = $post->title;
+				$email_data['post_url'] = URLROOT . '/posts/index/';
+
+				if (send_mail($user->email, $email_data))
+					echo 'EMAIL SENT!';
+				else 
+					die ('Could not Send EMAIL!');
+			}
+			if ($likes = $this->likeModel->toggleLike($data))
+				redirect('posts/index');
+			else 
+				die("Something went wrong!");
+			// $this->view('posts/index', $data);
 		}
 	}

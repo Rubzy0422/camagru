@@ -131,7 +131,7 @@
 		}
 
 		public function logout(){
-			unset($_SESSION['user_id']);
+			unset($_SESSION['userid']);
 			unset($_SESSION['user_email']);
 			unset($_SESSION['user_uname']);
 			unset($_SESSION['notifications']);
@@ -147,7 +147,7 @@
 					die (' NOT LOGIN ?');
 				}
 				// Delete logged in user 
-				if($this->userModel->deleteUser($_SESSION['user_id'])){
+				if($this->userModel->deleteUser($_SESSION['userid'])){
 					flash('user_message', 'User Removed');
 					self::logout();
 				} else {
@@ -234,7 +234,7 @@
 						if (empty($data['password_err'] && empty($data['confirm_password_err'])))
 						{
 							$data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-							$data['user_id'] = $user->id;
+							$data['userid'] = $user->id;
 							if ($this->userModel->updateUserPassword($data))
 							{
 								if ($this->userModel->deletePasswordResetToken($user->id))
@@ -315,7 +315,7 @@
 						$data = validate_passwords($data);
 						// Update Password now 
 						$data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-						$data['user_id'] = $_SESSION['user_id'];
+						$data['userid'] = $_SESSION['userid'];
 						if ($this->userModel->updateUserPassword($data))
 						{
 							redirect('');
@@ -404,7 +404,7 @@
 		public function createUserSession($user){
 			var_dump($user);
 			// die();
-			$_SESSION['user_id'] = $user->id;
+			$_SESSION['userid'] = $user->id;
 			$_SESSION['user_email'] = $user->email;
 			$_SESSION['user_uname'] = $user->uname;
 			$_SESSION['notifications'] = $user->notifications;

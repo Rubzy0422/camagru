@@ -11,25 +11,34 @@
 		}
 
 		public function getPosts(){
-			$this->db->query('SELECT *,
-			posts.id as postId,
-			users.id as userId,
+			$this->db->query('SELECT posts.id as postId,
 			posts.created_at as postCreated,
-			users.created_at as userCreated
-			FROM posts INNER JOIN users ON posts.user_id = users.id
-			INNER JOIN images ON posts.imageid = images.id
+			posts.title,
+			posts.body,
+			users.id as userid,
+			users.created_at as userCreated,
+			users.uname,
+			users.email,
+			users.notifications, 
+			images.userimage_path ,
+            count(comments.id) as comments,
+            count(likes.id) as likes FROM `posts`
+            
+            LEFT JOIN users ON users.id = posts.userid
+			LEFT JOIN likes ON likes.postid = posts.id
+            LEFT JOIN images ON posts.imageid = images.id
+            LEFT JOIN comments ON comments.postid = posts.id
+			GROUP BY posts.id
 			ORDER BY posts.created_at DESC');
-			// LIMIT 0, 5;
-
 			$results = $this->db->resultSet();
 
 			return $results;
 		}
 
 		public function addPost($data){
-			$this->db->query('INSERT INTO posts (title, user_id, body) VALUES(:title, :user_id, :body)');
+			$this->db->query('INSERT INTO posts (title, userid, body) VALUES(:title, :userid, :body)');
 			$this->db->bind(':title', $data['title']);
-			$this->db->bind(':user_id', $data['user_id']);
+			$this->db->bind(':userid', $data['userid']);
 			$this->db->bind(':body', $data['body']);
 
 			// get that Id :) 
@@ -51,7 +60,7 @@
 					mergeImages( $img_src . $ext , $img_stick . $ext, $img_dst . $ext); 
 					
 					$data = [
-						'post_id' => $id,
+						'postid' => $id,
 						'image_path' => $img_src . $ext,
 						'sticker_path' => $img_stick  . $ext,
 						'userimage_path' => $img_dst . $ext,
@@ -98,11 +107,17 @@
 		}
 
 		public function getPostById($id){
-			$this->db->query('SELECT * FROM posts WHERE id = :id');
+			$this->db->query('SELECT posts.id as postId,
+									 posts.title,
+									posts.body,
+									posts.userid,
+									images.userimage_path,
+									count(likes.id) as likes FROM `posts`
+									INNER JOIN images ON posts.imageid = images.id
+									LEFT JOIN likes ON likes.postid = posts.id
+									WHERE posts.id = :id;');
 			$this->db->bind(':id', $id);
-
 			$row = $this->db->single();
-
 			return $row;
 		}
 

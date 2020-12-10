@@ -8,8 +8,8 @@
 
 		// 1. Add image
 		public function addImage($data){
-			$this->db->query('INSERT INTO images (post_id, image_path, sticker_path, userimage_path) VALUES(:post_id, :image_path, :sticker_path, :userimage_path)');
-			$this->db->bind(':post_id', $data['post_id']);
+			$this->db->query('INSERT INTO images (postid, image_path, sticker_path, userimage_path) VALUES(:postid, :image_path, :sticker_path, :userimage_path)');
+			$this->db->bind(':postid', $data['postid']);
 			$this->db->bind('image_path', $data['image_path']);
 			$this->db->bind('sticker_path', $data['sticker_path']);
 			$this->db->bind('userimage_path', $data['userimage_path']);
