@@ -21,15 +21,20 @@
 			users.email,
 			users.notifications, 
 			images.userimage_path ,
-            count(comments.id) as comments,
             count(likes.id) as likes FROM `posts`
             
             LEFT JOIN users ON users.id = posts.userid
 			LEFT JOIN likes ON likes.postid = posts.id
             LEFT JOIN images ON posts.imageid = images.id
-            LEFT JOIN comments ON comments.postid = posts.id
 			GROUP BY posts.id
 			ORDER BY posts.created_at DESC');
+			$results = $this->db->resultSet();
+
+			return $results;
+		}
+
+		public function getPostIds() {
+			$this->db->query('SELECT posts.id FROM `posts` ORDER BY posts.created_at DESC');
 			$results = $this->db->resultSet();
 
 			return $results;

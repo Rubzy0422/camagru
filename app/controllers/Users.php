@@ -2,6 +2,7 @@
 	class Users extends Controller {
 		public function __construct(){
 			$this->userModel = $this->model('User');
+			$this->postModel = $this->model('Post');
 		}
 
 		public function index() {
@@ -148,6 +149,7 @@
 				}
 				// Delete logged in user 
 				if($this->userModel->deleteUser($_SESSION['userid'])){
+					UpdateImageFolder($this->postModel->getPostIds());
 					flash('user_message', 'User Removed');
 					self::logout();
 				} else {

@@ -7,10 +7,12 @@
 			$this->commentModel = $this->model('Comment');
 		}
 
-		public function index(){
+		public function index($page = 1){
 			// Get posts
 			// Add Pagination Page number
-			$posts = $this->postModel->getPosts();
+
+
+			$posts = $this->postModel->getPosts((int)$page);
 			
 			// Loop through posts and add likes
 			$data = [
@@ -209,6 +211,52 @@
 			}
 		}
 
+		public function commentDelete($id) {
+			// Comment Id, Post Id 
+				$data = explode('|', $id);
+				if (count($data) != 2)
+				{
+					// Flash error
+					redirect('posts');
+				}
+				// if post does not exist 
+				$comment = $this->commentModel->getCommentById($data[0]);
+				$post = $this->postModel->getPostById($data[1]);
+
+				if ($post->postId == NULL)
+				{
+					redirect('posts');
+				}
+
+				if ($comment == false)
+				{
+					redirect('posts/comment/' . $data[1]);
+				}
+
+				var_dump($comment);
+				die();
+				// Creator of post or commenter
+							//|| $_SESSION['userid'] == $comment->
+				if ($_SESSION['userid'] == $post->userid || $_SESSION['userid'] == $comment->userid)
+				{
+				 
+					$data['id'] = $data[0];
+					$data['postid'] = $data[1];
+
+					if ($this->commentModel->DeleteComment($data))
+					{
+						redirect('posts/comment/' . $data[1]);
+					}
+					else 
+					{
+						redirect('posts');
+					}
+				}
+				else {
+					redirect('posts/comment/' . $data[1]);
+				}
+			}
+
 		public function delete($id){
 			if(!isLoggedIn()){
 				redirect('users/login');
@@ -223,6 +271,7 @@
 				}
 
 				if($this->postModel->deletePost($id)){
+					UpdateImageFolder($this->postModel->getPostIds());
 					flash('post_message', 'Post Removed');
 					redirect('posts');
 				} else {

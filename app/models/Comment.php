@@ -8,7 +8,7 @@
 
 		public function getCommentForId($id) {
 			// So now we know hehehe
-			$this->db->query('SELECT comments.comment, users.uname FROM comments LEFT JOIN users ON users.id = comments.userid  WHERE postid = :postid ORDER BY comments.id DESC');
+			$this->db->query('SELECT comments.comment, comments.id, comments.postid, users.uname FROM comments LEFT JOIN users ON users.id = comments.userid  WHERE postid = :postid ORDER BY comments.id DESC');
 			$this->db->bind(':postid', $id);
 			$results = $this->db->resultSet();
 
@@ -20,6 +20,27 @@
 			$this->db->bind(':userid', $data['userid']);
 			$this->db->bind(':postid', $data['postid']);
 			$this->db->bind(':comment', $data['comment']);
+
+			// get that Id :) 
+			if($this->db->execute()){
+				return $this->getCommentForId($data['postid']);
+			}
+			else {
+				return false;
+			}
+		}
+
+		public function getCommentById($id) {
+			$this->db->query('SELECT *  FROM `comments` WHERE `comments`.`id` = :id');
+			$this->db->bind(':id', $id);
+ 
+			$row = $this->db->single();
+			return $row;
+		}
+
+		public function DeleteComment($data) {
+			$this->db->query('DELETE FROM `comments` WHERE `comments`.`id` = :id');
+			$this->db->bind(':id', $data['id']);
 
 			// get that Id :) 
 			if($this->db->execute()){

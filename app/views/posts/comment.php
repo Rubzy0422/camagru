@@ -49,6 +49,8 @@
 						<h4 class="header"><?php echo $comment->uname; ?></h4>
 
 						<p><?php echo $comment->comment; ?></p>
+						<a href="<?php echo URLROOT;?>/posts/commentDelete/<?php echo $comment->id . '|' . $comment->postid;?>"><i class="fa fa-close"></i></a>
+
 					</div>
 					
 				<?php endforeach; ?>

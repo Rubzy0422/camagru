@@ -36,11 +36,11 @@
 					<!-- Work with Likes Table to add / Remove like lol -->
 					
 					<a href="<?php echo URLROOT; ?>/posts/like/<?php echo $post->postId; ?>" class="btn btn-dark">
-					<i class="fa fa-heart"></i> <?php echo ($post->likes != 0) ?></a>
+					<i class="fa fa-heart"></i> <?php echo ($post->likes != 0) ? $post->likes :''  ?></a>
 				</div>
 				<div class="col">
 					<a href="<?php echo URLROOT; ?>/posts/comment/<?php echo $post->postId; ?>" class="btn btn-dark">
-					<i class="fa fa-comment"></i> <?php echo ($post->comments != 0) ?></a>
+					<i class="fa fa-comment"></i></a>
 				</div>
 				<?php if(isLoggedIn()) : ?>
 					<?php if($post->userid == $_SESSION['userid']) : ?>
@@ -55,4 +55,8 @@
 
 		</div>
 	<?php endforeach; ?>
+
+
+
+	
 <?php require APPROOT . '/views/inc/footer.php'; ?>
