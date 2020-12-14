@@ -1,5 +1,4 @@
 <?php require APPROOT . '/views/inc/header.php'; ?>
-	<?php flash('post_message'); ?>
 	<div class="row mb-3">
 		<div class="col-md-6">
 			<h1>Posts</h1>
@@ -23,8 +22,8 @@
 				// Create a base64 entity of image
 				$path = $post->userimage_path;
 				$type = pathinfo($path, PATHINFO_EXTENSION);
-				$data = file_get_contents($path);
-				$base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+				$imgdat = file_get_contents($path);
+				$base64 = 'data:image/' . $type . ';base64,' . base64_encode($imgdat);
 				echo $base64; 
 			?>" alt="Failed to Retreive Image" class="img-fluid";/>
 
@@ -42,7 +41,7 @@
 					<a href="<?php echo URLROOT; ?>/posts/comment/<?php echo $post->postId; ?>" class="btn btn-dark">
 					<i class="fa fa-comment"></i></a>
 				</div>
-				<?php if(isLoggedIn()) : ?>
+				<?php if( isLoggedIn() ) : ?>
 					<?php if($post->userid == $_SESSION['userid']) : ?>
 
 						<a href="<?php echo URLROOT; ?>/posts/edit/<?php echo $post->postId; ?>" class="btn btn-dark">Edit</a>
@@ -56,7 +55,22 @@
 		</div>
 	<?php endforeach; ?>
 
-
-
+<!-- Pagination Data will be required -->
+<nav class="fixed-bottom">
+	<ul class="pagination justify-content-center">
+		
+		<li class="page-item <?php if ((int)$data['page'] -1 < 1) echo 'disabled'; ?>"> <!-- Disable if page is 1 or less -->
+			<a class="page-link" href="<?php echo URLROOT; ?>/posts/<?php echo $data['page'] -1 ?>" tabindex="-1">< </a>
+		</li>
 	
+		<li class="page-item">
+			<a class="page-link" href="<?php echo URLROOT; ?>/posts/<?php echo $data['page']?>"><?php echo $data['page'] ?></a>
+		</li>
+		
+		<li class="page-item <?php if ((int)$data['page'] + 1 > $data['maxpage']) echo 'disabled'; ?>">
+			<a class="page-link" href="<?php echo URLROOT; ?>/posts/<?php echo $data['page'] + 1?>"> ></a> <!-- Disabple if page is greater than pagemax -->
+		</li> 
+	</ul>
+</nav>
+
 <?php require APPROOT . '/views/inc/footer.php'; ?>

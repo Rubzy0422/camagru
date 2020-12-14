@@ -25,12 +25,12 @@
 			if ($didlike->likes == "0")
 			{
 				if ($this->addLike($data))
-					return $this->getLikes($data['postid']);
+					return [$this->getLikes($data['postid']), true];
 			}
 			else 
 			{
 				if ($this->removeLike($data))
-					return $this->getLikes($data['postid']);
+					return [$this->getLikes($data['postid']), false];
 			}
 			return false;
 		}

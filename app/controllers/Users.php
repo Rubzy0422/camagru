@@ -45,17 +45,18 @@
 					$email_data['username'] = $data['uname'];
 					$email_data['verif_url'] = URLROOT . "/users/verify/" . $token;
 					$email_data['action'] = "Register";
-					if (send_mail($data['email'], $email_data))
-						echo 'EMAIL SENT!';
-					else 
-						die ('Could not Send EMAIL!');
-					// Register User
+					if (!send_mail($data['email'], $email_data)) 
+						setFlash('ERROR', 'We could not register you, the email could not be sent!');
+						redirect('users/register');
+					
+						// Register User
 					$data['token'] = sha1($token);
 					if($this->userModel->register($data)){
-						flash('register_success', 'You are registered please verify your email to login!');
+						setFlash('SUCCESS', 'You are registered please verify your email to login!');
 						redirect('users/login');
 					} else {
-						die('Something went wrong');
+						setFlash('ERROR', 'We could not register you, something went wrong!');
+						redirect('users/register');
 					}
 				} else {
 					// Load view with errors if any
@@ -100,7 +101,7 @@
 				}
 				if (isset($user->verify_Hash))
 				{
-					flash('error', 'Please Verify your email to log in!');
+					setFlash('ERROR', 'Please Verify your email to log in!');
 					$this->view('users/login', $data);
 				}
 				else 
@@ -125,8 +126,6 @@
 					'uname_err' => '',
 					'password_err' => ''
 				];
-
-				// Load view
 				$this->view('users/login', $data);
 			}
 		}
@@ -137,6 +136,7 @@
 			unset($_SESSION['user_uname']);
 			unset($_SESSION['notifications']);
 			session_destroy();
+			setFlash('SUCCESS', 'Logged Out Successfully!');
 			redirect('users/login');
 		}
 
@@ -144,18 +144,20 @@
 			// Login redirect
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
 				if(!isLoggedIn()){
+					setFlash('ERROR', 'Please Login to Delete a User!');
 					redirect('users/login');
-					die (' NOT LOGIN ?');
 				}
 				// Delete logged in user 
 				if($this->userModel->deleteUser($_SESSION['userid'])){
 					UpdateImageFolder($this->postModel->getPostIds());
-					flash('user_message', 'User Removed');
+					flash('SUCCESS', 'Account Removed successfully!');
 					self::logout();
 				} else {
-					die('Something went wrong');
+					setFlash('ERROR', 'Something went wrong deleting your account!');
+					self::logout();
 				}
 			} else {
+				// If get just redirect
 				redirect('');
 			}
 		}
@@ -187,21 +189,18 @@
 					];
 					if ($this->userModel->setPasswordResetToken($dbdat))
 					{
-						if (send_mail($data['email'], $email_data))
-							echo 'EMAIL SENT!';
-						else 
-							die ('Could not Send EMAIL!');
+						if (!send_mail($data['email'], $email_data))
+							setFlash('ERROR', 'We could not send a password reset email!');
 						redirect('');
 					}
 					else 
 					{
-						die("Unexpected error while setting reset Token!");
+						setFlash('ERROR', 'We could not send a password reset email!');
 					}
 				}
 				
 			}
 			$this->view('users/forgotPass', $data);
-
 		}
 
 		public function updatePass($token = NULL) {
@@ -241,15 +240,18 @@
 							{
 								if ($this->userModel->deletePasswordResetToken($user->id))
 								{
+									setFlash('SUCCESS', 'Your password has been updated!');
 									redirect('');
 								}
 								else 
 								{
-									die ("Could not Delete Password Token");
+									setFlash('ERROR', 'We could not remove your password Token!');
+									redirect('');
 								}
 							}
 							else {
-								die("Something went wrong!");
+								setFlash('ERROR', 'We could not update your password!');
+								redirect('');
 							}
 						}
 						else {
@@ -259,7 +261,8 @@
 					}
 					else 
 					{
-						die('Invalid Token!');
+						setFlash('ERROR', 'Invalid Token Provided!');
+						redirect('');
 					}
 					// $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
 				}
@@ -285,11 +288,12 @@
 					}
 					else 
 					{
-						die('Invalid Token!');
+						setFlash('ERROR', 'Invalid Token Provided!');
+						redirect('');
 					}
-
 				}
 				else {
+					setFlash('SUCCESS', 'Your password has been updated!');
 					redirect('users/login');
 				}
 			}
@@ -320,10 +324,12 @@
 						$data['userid'] = $_SESSION['userid'];
 						if ($this->userModel->updateUserPassword($data))
 						{
+							setFlash('SUCCESS', 'Your password has been updated!');
 							redirect('');
 						}
 						else {
-							die("Something went wrong!");
+							setFlash('ERROR', 'We could not update your password!');
+							redirect('');
 						}
 					}
 					else {
@@ -338,6 +344,7 @@
 		public function update() {
 			// Login redirect
 			if(!isLoggedIn()){
+				setFlash('ERROR', 'Please login to update your profile!');
 				redirect('users/login');
 			}
 
@@ -362,10 +369,10 @@
 						// $this->logout();
 						$this->createUserSession($data);
 						// $this->login($data);
-						flash('update_success', 'Your Profile has been updated!');
+						setFlash('SUCCESS', 'Your Profile has been updated!');
 						// $this->createUserSession($data);
 					} else {
-						die('Something went wrong');
+						setFlash('ERROR', 'We could not update this user!');
 					}
 				} else {
 					// Load view with errors if any
@@ -388,24 +395,25 @@
 		public function verify($token = NULL) {
 			if (!isset($token))
 			{
-				die ('Invalid TOKEN!');
+				setFlash("ERROR", "Invalid token provided for verifying account!");
+				redirect('');
 			}
 			else {
 				// Get user by $token and remove his password_hash :) 
 				$data = $this->userModel->deleteEmailVerifyHash(sha1($token));
 				if ($data == true)
 				{
+					setFlash("SUCCESS", "Your account has been verified and you can now log in!");
 					redirect('users/login');
 				}
 				else {
-					die ('Invalid TOKEN!');
+					setFlash("ERROR", "Invalid token provided for verifying account!");
+					redirect('');
 				}
 			}
 		}
 
 		public function createUserSession($user){
-			var_dump($user);
-			// die();
 			$_SESSION['userid'] = $user->id;
 			$_SESSION['user_email'] = $user->email;
 			$_SESSION['user_uname'] = $user->uname;

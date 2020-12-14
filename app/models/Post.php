@@ -8,10 +8,17 @@
 		public function __construct(){
 			$this->db = new Database;
 			$this->imageModel = new Image;
+			$this->rpp = 5; // rows to get per page
 		}
 
-		public function getPosts(){
-			$this->db->query('SELECT posts.id as postId,
+		public function getPostCount() {
+			$this->db->query('SELECT COUNT(posts.id) as postcount FROM `posts`');
+			$row = $this->db->single();
+			return $row;
+		}	
+		
+		public function getPosts($page = 1){
+			$sql = 'SELECT posts.id as postId,
 			posts.created_at as postCreated,
 			posts.title,
 			posts.body,
@@ -21,15 +28,41 @@
 			users.email,
 			users.notifications, 
 			images.userimage_path ,
-            count(likes.id) as likes FROM `posts`
-            
-            LEFT JOIN users ON users.id = posts.userid
+			count(likes.id) as likes FROM `posts`
+			LEFT JOIN users ON users.id = posts.userid
 			LEFT JOIN likes ON likes.postid = posts.id
-            LEFT JOIN images ON posts.imageid = images.id
+			LEFT JOIN images ON posts.imageid = images.id
 			GROUP BY posts.id
-			ORDER BY posts.created_at DESC');
+			ORDER BY posts.created_at DESC';
+			$pageStart = (($page > 1) ? (($page - 1) * $this->rpp) : 0);
+			$sql = $sql . ' LIMIT :pageStart, :pageamount';
+			$this->db->query($sql);
+			$this->db->bind(':pageStart', $pageStart);
+			$this->db->bind(':pageamount', $this->rpp);
 			$results = $this->db->resultSet();
+			return ['page'=> ($pageStart / $this->rpp) + 1, 'posts' => $results];
+		}
 
+
+		public function getUserPosts(){
+			$sql = 'SELECT posts.id as postId,
+			posts.created_at as postCreated,
+			posts.title,
+			posts.body,
+			users.id as userid,
+			users.uname,
+			users.email,
+			users.notifications, 
+			images.userimage_path FROM posts
+			LEFT JOIN users ON users.id = posts.userid
+			LEFT JOIN images ON posts.imageid = images.id
+			WHERE users.id = :id
+			GROUP BY posts.id
+			ORDER BY posts.created_at DESC ';
+
+			$this->db->query($sql);
+			$this->db->bind(':id', $_SESSION['userid']);
+			$results = $this->db->resultSet();
 			return $results;
 		}
 

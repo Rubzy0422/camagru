@@ -13,6 +13,7 @@
 
 </head>
 	<?php require APPROOT . '/views/inc/navbar.php'; ?>
+	<?php require APPROOT . '/views/inc/flash.php'; ?>
 <body class="pt-5">
 	<div class="container pt-5">
 	

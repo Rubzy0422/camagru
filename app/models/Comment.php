@@ -11,7 +11,6 @@
 			$this->db->query('SELECT comments.comment, comments.id, comments.postid, users.uname FROM comments LEFT JOIN users ON users.id = comments.userid  WHERE postid = :postid ORDER BY comments.id DESC');
 			$this->db->bind(':postid', $id);
 			$results = $this->db->resultSet();
-
 			return $results;
 		}
 

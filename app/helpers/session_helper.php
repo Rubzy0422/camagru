@@ -1,35 +1,43 @@
-<?php
-	session_start();
+<?php 
+	/* Basic flashes 1. SUCCESS 
+					 2. ERROR 
+					 3. INFO 
+		usage , set the type, and then the message 
 
-	// Flash message helper
-	// EXAMPLE - flash('register_success', 'You are now registered');
-	// DISPLAY IN VIEW - echo flash('register_success');
-	function flash($name = '', $message = '', $class = 'alert alert-success'){
-		if(!empty($name)){
-			if(!empty($message) && empty($_SESSION[$name])){
-				if(!empty($_SESSION[$name])){
-					unset($_SESSION[$name]);
+					 */
+session_start();
+
+	function setFlash($id ,$message){
+		$_SESSION["flash_{$id}"] =  $message;
+	}
+
+	function getFlashes(){
+		$flashes = array();
+		foreach($_SESSION as $id => $value){
+			if(strpos($id, "flash_") === 0){
+			
+				if ($id == "flash_SUCCESS")
+				{
+					$class = "alert alert-success";
 				}
-
-				if(!empty($_SESSION[$name. '_class'])){
-					unset($_SESSION[$name. '_class']);
+				elseif ($id == "flash_ERROR")
+				{
+					$class = "alert alert-danger";
 				}
-
-				$_SESSION[$name] = $message;
-				$_SESSION[$name. '_class'] = $class;
-			} elseif(empty($message) && !empty($_SESSION[$name])){
-				$class = !empty($_SESSION[$name. '_class']) ? $_SESSION[$name. '_class'] : '';
-				echo '<div class="'.$class.'" id="msg-flash">'.$_SESSION[$name].'</div>';
-				unset($_SESSION[$name]);
-				unset($_SESSION[$name. '_class']);
+				elseif ($id == "flash_INFO")
+				{
+					$class = "alert alert-info";
+				}
+				echo '<div class="' . $class . '" id="msg-flash">' . $value .'</div>';
+				unset($_SESSION[$id]);
 			}
 		}
-	}
+}
 
-	function isLoggedIn(){
-		if(isset($_SESSION['userid'])){
-			return true;
-		} else {
-			return false;
-		}
+function isLoggedIn(){
+	if(isset($_SESSION['userid'])){
+		return true;
+	} else {
+		return false;
 	}
+}

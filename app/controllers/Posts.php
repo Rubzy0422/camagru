@@ -11,22 +11,30 @@
 			// Get posts
 			// Add Pagination Page number
 
-
-			$posts = $this->postModel->getPosts((int)$page);
+			$count = $this->postModel->getPostCount();
+			echo '<br />';
+			$data = $this->postModel->getPosts((int)$page);
+			$data['maxpage'] = ceil($count->postcount / $this->postModel->rpp);
 			
-			// Loop through posts and add likes
-			$data = [
-				'posts' => $posts,
-			];
 			$this->view('posts/index', $data);
 		}
 
 		public function add(){
 			if(!isLoggedIn()){
+				setFlash('ERROR', 'Please Login to add a post!');
 				redirect('users/login');
 			}
-			$prevPosts = [];
 			$stickers = glob('../public/stickers/*.{jpg,png,gif}', GLOB_BRACE);
+			
+			$prevPosts = $this->postModel->getUserPosts();
+			foreach ($prevPosts as $post)
+			{
+				$path = $post->userimage_path;
+				$type = pathinfo($path, PATHINFO_EXTENSION);
+				$imgdata = file_get_contents($path);
+				$base64 = 'data:image/' . $type . ';base64,' . base64_encode($imgdata);
+				$post->imgsrc = $base64; 
+			}
 
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
 				// Sanitize POST array
@@ -61,16 +69,16 @@
 				// Make sure no errors
 				if(empty($data['title_err']) && empty($data['body_err']) && empty($data['stickerimg_err'] && empty($data['userimg_err']))) {
 					if($this->postModel->addPost($data)){
-						flash('post_message', 'Post Added');
+						setFlash('SUCCESS', 'Post Added!');
 						redirect('posts');
 					} else {
 						//Image not created or what ever lol
-						die('Something went wrong');
+						setFlash('ERROR', 'We could not add that post!');
+						redirect('posts');
 					}
 				} else {
 					$this->view('posts/add', $data);
 				}
-
 			} else {
 				$data = [
 					'title' => '',
@@ -85,13 +93,13 @@
 					'stickerimg_err' => '',
 					'userimg_err' => ''
 				];
-	
 				$this->view('posts/add', $data);
 			}
 		}
 
 		public function edit($id){
 			if(!isLoggedIn()){
+				setFlash('ERROR', 'Please Login to edit a post!');
 				redirect('users/login');
 			}
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
@@ -119,10 +127,11 @@
 				if(empty($data['title_err']) && empty($data['body_err'])){
 					// Validated
 					if($this->postModel->updatePost($data)){
-						flash('post_message', 'Post Updated');
+						setFlash('SUCCESS', 'Post Updated successfully!');
 						redirect('posts');
 					} else {
-						die('Something went wrong');
+						setFlash('ERROR', 'Post could not be updated, something went wrong!');
+						redirect('posts');
 					}
 				} else {
 					// Load view with errors
@@ -135,6 +144,7 @@
 
 				// Check for owner
 				if($post->userid != $_SESSION['userid']){
+					setFlash('ERROR', 'You are not allowed to edit this post!');
 					redirect('posts');
 				}
 				$data = [
@@ -148,6 +158,10 @@
 		}
 
 		public function comment($id){
+			if(!isLoggedIn()){
+				setFlash('ERROR', 'Please login to make a comment!');
+				redirect('users/login');
+			}
 			// Display comments :)
 			$post = $this->postModel->getPostById($id);
 			$user = $this->userModel->getUserById($post->userid);
@@ -184,7 +198,7 @@
 						$email_data['post_url'] = URLROOT . '/posts/index/';
 
 						if (!send_mail($user->email, $email_data))
-							die ('Could not Send EMAIL!');
+							setFlash('ERROR', 'We could not send the email to the poster!');
 					}
 
 					if ($updatedComment = $this->commentModel->addComment($userdata))
@@ -192,7 +206,8 @@
 						$data['comments'] = $updatedComment;
 					}
 					else {
-						die ("Could not update Comments!");
+						setFlash('ERROR', 'We could not add that comment, something went wrong!');
+						redirect('');
 					}
 				}			
 				$this->view('posts/comment', $data);
@@ -212,11 +227,11 @@
 		}
 
 		public function commentDelete($id) {
-			// Comment Id, Post Id 
+			// Comment Id, Post Id makes a id to delete by :)
 				$data = explode('|', $id);
 				if (count($data) != 2)
 				{
-					// Flash error
+					setFlash('ERROR', 'We could not delete this Comment, you provided a Invalid id!');
 					redirect('posts');
 				}
 				// if post does not exist 
@@ -225,40 +240,42 @@
 
 				if ($post->postId == NULL)
 				{
+					setFlash('ERROR', 'We could not delete this Comment, you provided a Invalid id!');
 					redirect('posts');
 				}
 
 				if ($comment == false)
 				{
+					setFlash('ERROR', 'We could not delete this Comment, you provided a Invalid id!');
 					redirect('posts/comment/' . $data[1]);
 				}
-
-				var_dump($comment);
-				die();
-				// Creator of post or commenter
-							//|| $_SESSION['userid'] == $comment->
+				// Creator of post or creator of comment
 				if ($_SESSION['userid'] == $post->userid || $_SESSION['userid'] == $comment->userid)
 				{
-				 
 					$data['id'] = $data[0];
 					$data['postid'] = $data[1];
 
-					if ($this->commentModel->DeleteComment($data))
+					$res = $this->commentModel->DeleteComment($data);
+					if ($res || $res == [])
 					{
+						setFlash('SUCCESS', 'Comment Removed Succesfully!');
 						redirect('posts/comment/' . $data[1]);
 					}
 					else 
 					{
+						setFlash('ERROR', 'We could not delete your comment something went wrong!');
 						redirect('posts');
 					}
 				}
 				else {
+					setFlash('ERROR', 'You are not allowed to remove this comment!');
 					redirect('posts/comment/' . $data[1]);
 				}
 			}
 
 		public function delete($id){
 			if(!isLoggedIn()){
+				setFlash('Error', 'Please Login to delete a post!');
 				redirect('users/login');
 			}
 			if($_SERVER['REQUEST_METHOD'] == 'POST'){
@@ -267,23 +284,27 @@
 				// Check for owner
 				
 				if($post->userid != $_SESSION['userid']){
+					setFlash('ERROR', 'You are not allowed to remove this post!');
 					redirect('posts');
 				}
 
 				if($this->postModel->deletePost($id)){
 					UpdateImageFolder($this->postModel->getPostIds());
-					flash('post_message', 'Post Removed');
+					setFlash('SUCCESS', 'Post Removed Succesfully!');
 					redirect('posts');
 				} else {
-					die('Something went wrong');
+					setFlash('ERROR', 'we could not remove this post, something went wrong!');
+					redirect('');
 				}
 			} else {
+				// You gave a get request just redirect
 				redirect('posts');
 			}
 		}
 
 		public function like($id) {
 			if(!isLoggedIn()){
+				setFlash('ERROR', 'Please Login to like a post!');
 				redirect('users/login');
 			}
 			$data['userid'] = $_SESSION['userid'];
@@ -300,16 +321,26 @@
 				$email_data['action'] = "Like";
 				$email_data['post_title'] = $post->title;
 				$email_data['post_url'] = URLROOT . '/posts/index/';
-
-				if (send_mail($user->email, $email_data))
-					echo 'EMAIL SENT!';
-				else 
-					die ('Could not Send EMAIL!');
 			}
 			if ($likes = $this->likeModel->toggleLike($data))
-				redirect('posts/index');
+			{
+				if ($likes[1] === true)
+				{
+					if (!send_mail($user->email, $email_data))
+						setFlash('ERROR', 'We could not send a email to the poster!');
+						
+					setFlash('SUCCESS', 'Like Added!');
+					redirect('posts/index');
+				}
+				elseif ($likes[1] === false) 
+				{
+					setFlash('SUCCESS', 'Like Removed!');
+					redirect('posts/index');
+				}
+			}
 			else 
-				die("Something went wrong!");
-			// $this->view('posts/index', $data);
+				setFlash('ERROR', 'We could not add or remove your like!');
+				redirect('');
+				// $this->view('posts/index', $data);
 		}
 	}

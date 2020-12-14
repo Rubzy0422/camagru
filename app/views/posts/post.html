@@ -1,0 +1,22 @@
+<div class="card card-body mb-3">
+	<h4 class="card-title">{{ title }}</h4>
+	<div class="bg-light p-2 mb-3">
+		Written by {{ uname }} on {{ created }}
+	</div>
+
+	<img src="{{ imgsrc }}" alt="Failed to Retreive Image" class="img-fluid";/>
+	<p class="card-text">{{ body }}</p>
+
+	<div class="row">
+		<div class="col">
+			<a href="{{ postlikeurl }}" class="btn btn-dark">
+			<i class="fa fa-heart"></i> {{ postlikes }}</a>
+		</div>
+		<div class="col">
+			<a href="{{ postcommenturl }}" class="btn btn-dark">
+			<i class="fa fa-comment"></i></a>
+		</div>
+
+		{{ loggedinView }}
+	</div>
+</div>

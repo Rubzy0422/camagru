@@ -4,7 +4,7 @@
 	
 		<h2>Add Post</h2>
 		<p>Create a post with this form</p>		
-		<div class="container-fluid">
+		<div class="container-fluid" style="height: auto;">
 			<div class="row">
 				<!-- Main -->
 				<div class="col-lg-8">
@@ -90,8 +90,18 @@
 				</div>
 
 				<!-- SideNav -->
-				<div class="col-lg-2">
-					<div class="card card-body bg-light mt-5">
+				<div class="col-lg-4">
+					<div class="card card-body bg-light mt-5 ">
+						<div class="container" style="height: 70vh;overflow-y: scroll;">
+							<?php
+							foreach ($data['prev_posts'] as $key=>$post)
+							{
+								echo '<div class="card card-body bg-light">';
+								echo '<a href="' . URLROOT . "/posts/comment/". $post->postId . '"> <img class="img-fluid" src="'. $post->imgsrc .'" alt="could not load image for post" /></a>';
+								echo '</div>';
+							}
+							?>
+						</div>
 					</div>
 				</div>
 			</div>
