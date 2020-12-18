@@ -1,6 +1,7 @@
 <?php 
 
 function createImage($data, $name) {
+
 	if (preg_match('/^data:image\/(\w+);base64,/', $data, $type)) {
 		$data = substr($data, strpos($data, ',') + 1);
 		$type = strtolower($type[1]); // jpg, png, gif

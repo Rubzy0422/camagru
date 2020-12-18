@@ -1,7 +1,5 @@
 # Camagru 
-
 A clasic web application built in php that allows uploading of posts with stickers and liking or commenting on those posts.
-
 # Requirements
 1. Bitnami LAMP / WAMP / XAMP / MAMP (this includes php, js, css, html, MySQL and phpMyAdmin if you were to install and configure this manually)
 
