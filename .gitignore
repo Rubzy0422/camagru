@@ -1,1 +1,4 @@
 app/Images/*/*
+!app/Images/combo/.gitkeep
+!app/Images/stickers/.gitkeep
+!app/Images/userimages/.gitkeep
