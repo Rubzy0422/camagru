@@ -1,4 +1,4 @@
-DROP DATABASE camagru;
+DROP DATABASE IF EXISTS camagru;
 CREATE DATABASE camagru;
 
 USE camagru;
