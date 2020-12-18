@@ -29,9 +29,9 @@
 			users.notifications, 
 			images.userimage_path ,
 			count(likes.id) as likes FROM `posts`
-			INNER JOIN users ON users.id = posts.userid
-			INNER JOIN likes ON likes.postid = posts.id
-			INNER JOIN images ON posts.imageid = images.id
+			LEFT JOIN users ON users.id = posts.userid
+			LEFT JOIN likes ON likes.postid = posts.id
+			LEFT JOIN images ON posts.imageid = images.id
 			GROUP BY posts.id
 			ORDER BY posts.created_at DESC';
 			$pageStart = (($page > 1) ? (($page - 1) * $this->rpp) : 0);
@@ -54,8 +54,8 @@
 			users.email,
 			users.notifications, 
 			images.userimage_path FROM posts
-			INNER JOIN users ON users.id = posts.userid
-			INNER JOIN images ON posts.imageid = images.id
+			LEFT JOIN users ON users.id = posts.userid
+			LEFT JOIN images ON posts.imageid = images.id
 			WHERE users.id = :id
 			GROUP BY posts.id
 			ORDER BY posts.created_at DESC ';
@@ -151,8 +151,8 @@
 									posts.userid,
 									images.userimage_path,
 									count(likes.id) as likes FROM `posts`
-									INNER JOIN images ON posts.imageid = images.id
-									INNER JOIN likes ON likes.postid = posts.id
+									LEFT JOIN images ON posts.imageid = images.id
+									LEFT JOIN likes ON likes.postid = posts.id
 									WHERE posts.id = :id;');
 			$this->db->bind(':id', $id);
 			$row = $this->db->single();
