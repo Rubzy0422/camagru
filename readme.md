@@ -15,6 +15,7 @@ A clasic web application built in php that allows uploading of posts with sticke
 # Architecture 
 * Based off of https://www.udemy.com/course/object-oriented-php-mvc/
 * UI -> Controller -> Service -> Model -> Database
+* UI -> Controller -> Model -> Database
 
 ## Responsibilities
 ### Framework (app)
@@ -27,7 +28,7 @@ A clasic web application built in php that allows uploading of posts with sticke
 4. Interfaces
 	ensures loose coupeling between dependencies
 	since this is such a small application I did not have a need for this
-5. Services
+5. Services / Helpers
 	Business logic lives in this layer and controllers make use of this
 6. config
 	All of the applications main config is within this layer
